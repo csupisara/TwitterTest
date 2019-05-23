@@ -1,17 +1,27 @@
 import React, { Component } from 'react'
-import socketIOClient from 'socket.io-client'
+// import socketIOClient from 'socket.io-client'
 import {
-  // BarChart,
   CartesianGrid,
   XAxis,
   YAxis,
-  // Tooltip,
-  // Legend,
-  // Bar,
   Line,
   LineChart,
 } from 'recharts'
 import moment from 'moment'
+const firebase = require("firebase/app")
+require("firebase/database")
+
+var firebaseConfig = {
+  apiKey: "AIzaSyCeU4jshffXwvq-jpTmjMD5LHl8a-jh--E",
+  authDomain: "swptwitter.firebaseapp.com",
+  databaseURL: "https://swptwitter.firebaseio.com",
+  projectId: "swptwitter",
+  storageBucket: "swptwitter.appspot.com",
+  messagingSenderId: "348188449421",
+  appId: "1:348188449421:web:0338f76cbe619bf7"
+};
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
 
 class App extends Component {
   constructor() {
@@ -24,12 +34,11 @@ class App extends Component {
   }
 
   componentDidMount = () => {
-    const { endpoint, message } = this.state
-    const temp = message
-    const socket = socketIOClient(endpoint)
-    socket.on('new-message', (messageNew) => {
-      temp.push(messageNew)
-      this.setState({ message: temp })
+    firebase.database().ref('/db').on("value",snap => {
+      if(snap.val()) {
+        const values = Object.values(snap.val())
+        this.setState({ message: values })
+      }
     })
   }
 
@@ -38,19 +47,20 @@ class App extends Component {
     const data = []
 
     message.forEach(m => {
-      let text = m.text
-      if(text && typeof text === 'string' && text.toUpperCase().includes('#TRADEWAR')){
         let time = m.timestamp / 1000
-        let unixTime = moment.unix(time).format('HH:mm')
-        console.log(unixTime)
-        const findData = data.find(d => d.timestamp === unixTime)
-        if (findData){
-          findData.count++
-        }
-        else{
+        let unixTime = moment.unix(time).startOf("minutes").format('HH:mm')
+
+        const filtered = data.filter(d => {
+          return d.timestamp === unixTime
+        })
+
+        // index
+        if(filtered.length > 0) {
+          const index = data.indexOf(filtered[0])
+          data[index].count += 1
+        } else {
           data.push({timestamp: unixTime, count: 1})
         }
-      }
     })
 
     return (
