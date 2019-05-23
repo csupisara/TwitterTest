@@ -1,0 +1,15 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.17.0",
+    "firebase": "^6.0.2",
+    "socket.io": "^2.2.0",
+    "twitter": "^1.7.1"
+  }
+}
